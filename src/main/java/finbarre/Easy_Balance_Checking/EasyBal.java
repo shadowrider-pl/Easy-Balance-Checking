@@ -9,13 +9,14 @@ import java.util.Locale;
 public class EasyBal {
 	public static String balance(String book) {
 		book = book.replaceAll("[^A-Za-z0-9.\\n ]", "");
+		book = book.replaceAll("  ", " ");
 		book = book + "\n";
 		String newBook = "";
 		double originalBalance = 0;
 		double balance = 0;
 		int previousNewLinePosition = 0;
 		double total = 0;
-		List<Double> averageList = new ArrayList<>();
+		List<Double> averageList = new ArrayList<Double>();
 		DecimalFormat decimalFormat = new DecimalFormat("#.00", DecimalFormatSymbols.getInstance(Locale.US));
 
 		for (int i = -1; (i = book.indexOf("\n", i + 1)) != -1; i++) {
@@ -39,28 +40,27 @@ public class EasyBal {
 					previousNewLinePosition = i;
 					break;
 				}
-
-				if (Character.isDigit(book.charAt(j - 1)) || Character.toString(book.charAt(j - 1)).equals(".")) {
+				if (Character.isDigit(book.charAt(j - 2)) || Character.toString(book.charAt(j - 2)).equals(".")) {
 					beginning = j;
 					countDigits++;
 				} else {
-
-					for (int p = previousNewLinePosition + 1; p < beginning - 1; p++) {
+					for (int p = previousNewLinePosition + 1; p < beginning - 2; p++) {
 						newBook = newBook + Character.toString(book.charAt(p));
 					}
 
-					while (countDigits > 0) {
-						amountStr = amountStr + Character.toString(book.charAt(beginning - 1));
+					while (countDigits >= 0) {
+						amountStr = amountStr + Character.toString(book.charAt(beginning - 2));
 						beginning++;
 						countDigits--;
 					}
+
 					amount = amount + Double.parseDouble(amountStr);
 
 					balance = balance - amount;
 					total = total + amount;
 					previousNewLinePosition = i;
 					averageList.add(amount);
-					double rounded = Math.round(balance * 100.0) / 100.0;
+					double rounded = Math.round(balance * 100.00) / 100.00;
 					newBook = newBook + decimalFormat.format(amount) + " Balance " + decimalFormat.format(rounded)
 							+ "\\r\\n";
 					break;
@@ -68,9 +68,12 @@ public class EasyBal {
 
 			}
 		}
-		newBook = newBook + "Total expense  " + decimalFormat.format(Math.round(total * 100.0) / 100.0) + "\\r\\n"
+		newBook = newBook.replaceAll("  ", " ");
+		newBook = newBook + "Total expense  " + decimalFormat.format(Math.round(total * 100.00) / 100.00) + "\\r\\n"
 				+ "Average expense  "
-				+ Math.round(averageList.stream().mapToDouble(val -> val).average().orElse(0.0) * 100.0) / 100.0;
+				+ decimalFormat
+						.format(Math.round(averageList.stream().mapToDouble(val -> val).average().orElse(0.0) * 100.00)
+								/ 100.00);
 
 		return newBook;
 	}
